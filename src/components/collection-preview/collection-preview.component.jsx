@@ -10,9 +10,12 @@ export const CollectionPreview = ({items, title}) => (
                 // display only four items:
                 items
                     .filter((item, idx) => idx < 4)
-                    .map(({id, ...otherItemProps}) => (
-                        <CollectionItem key={id} {...otherItemProps}/>
-                        // <div key={item.id}>{item.name}</div>
+                    // .map(({id, ...otherItemProps}) => (
+                    //     <CollectionItem key={id} {...otherItemProps}/>
+
+                    // Because of Redux, we simply passed the whole item in below item = {item}
+                    .map(item => (
+                        <CollectionItem key={item.id} item={item}/>
                     ))
             }
         </div>
