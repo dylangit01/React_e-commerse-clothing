@@ -13,6 +13,8 @@ const config = {
     measurementId: "G-5B4TDM68FV"
 };
 
+firebase.initializeApp(config);
+
 export const createUserProfileDocument = async (userAuth, additionalDate) => {
     if (!userAuth) return;
 
@@ -38,7 +40,44 @@ export const createUserProfileDocument = async (userAuth, additionalDate) => {
     return userRef
 };
 
-firebase.initializeApp(config);
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+    const collectionRef = firestore.collection(collectionKey)
+    // console.log(collectionRef)
+
+    // Below codes have three purposes: one is since collection in firebase can only make one set call at a time, so using forEach to loop each collection;
+    // second is using batch to submit all sets as one request at a time
+    // Third one is using collectionRef.doc() to let firebase create a newDocRef and randomly generate an ID for this object
+    const batch = firestore.batch();
+    objectsToAdd.forEach(obj => {
+        const newDocRef = collectionRef.doc();
+        // console.log(newDocRef)
+
+        // below will loop through the array and batch these calls together:
+        batch.set(newDocRef, obj)
+    });
+
+    return await batch.commit()
+};
+
+export const convertCollectionsSnapshotToMap = (collections) => {
+    const transformedCollection = collections.docs.map(doc => {
+        const {title, items} = doc.data()
+
+        return {
+            routeName: encodeURI(title.toLowerCase()),
+            id: doc.id,
+            title,
+            items
+        }
+    });
+    // console.log(transformedCollection)
+
+    return transformedCollection.reduce((accumulator, collection) => {
+        accumulator[collection.title.toLowerCase()] = collection;
+        return accumulator
+    }, {})
+};
+
 
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
